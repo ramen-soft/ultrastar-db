@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
 import { WS_HOST } from "../consts";
+import { v4 as uuid } from "uuid";
 
 export interface Message {
 	tid: string;
 	progress: number;
 	done: boolean;
+	event?: string;
+	message?: string;
 }
 
 export const useWS = () => {
@@ -12,11 +15,22 @@ export const useWS = () => {
 	const [isConnected, setIsConnected] = useState(false);
 
 	const [status, setStatus] = useState<{
-		[tid: string]: { tid: string; progress: number; done: boolean };
+		[tid: string]: {
+			tid: string;
+			progress: number;
+			done: boolean;
+			errormessage?: string;
+			error: boolean;
+		};
 	}>();
 
 	useEffect(() => {
-		const ws = new WebSocket(WS_HOST);
+		const wid = localStorage.getItem("wid") || uuid();
+		if (!localStorage.getItem("wid")) {
+			localStorage.setItem("wid", wid);
+		}
+
+		const ws = new WebSocket(`${WS_HOST}?token=${wid}`);
 		ws.onopen = () => {
 			setIsConnected(true);
 		};
@@ -45,6 +59,8 @@ export const useWS = () => {
 							...{
 								tid: str.tid,
 								done: str.done,
+								error: str.event === "error",
+								errormessage: str.message,
 								progress: Number(
 									(str.progress ?? 0).toFixed(2)
 								),

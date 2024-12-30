@@ -13,13 +13,18 @@ export const DownloadTask = ({ task }: { task: IDownloadTask }) => {
 	}, [status, task.torrentId]);
 
 	return (
-		<div className="download-task">
-			<Progress value={progress * 100} />
+		<div className={`download-task ${task.error ? "error" : ""}`}>
+			<Progress value={progress * 100} error={task.error} />
 			<div className="task-info">
 				<strong>
 					{task.song.title} - {task.song.artist_name}
 				</strong>
-				<small>{task.torrentId}</small>
+				{task.error && (
+					<small style={{ color: "red", fontSize: "12px" }}>
+						{task.errormessage}
+					</small>
+				)}
+				{!task.error && <small>{task.torrentId}</small>}
 			</div>
 		</div>
 	);

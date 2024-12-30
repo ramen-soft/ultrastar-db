@@ -25,6 +25,8 @@ export interface IDownloadTask {
 	progress: number;
 	done: boolean;
 	song: ISong;
+	error: boolean;
+	errormessage?: string;
 }
 
 export const WSContextProvider = ({ children }: { children: ReactNode }) => {
@@ -34,7 +36,7 @@ export const WSContextProvider = ({ children }: { children: ReactNode }) => {
 	useEffect(() => {
 		if (status) {
 			Object.keys(status).forEach((tid) => {
-				if (status[tid].done) {
+				if (status[tid].done || status[tid].error) {
 					const qid = queue.findIndex(
 						(task) => task.torrentId === tid && task.done == false
 					);
@@ -43,7 +45,9 @@ export const WSContextProvider = ({ children }: { children: ReactNode }) => {
 						newQueue.splice(qid, 1, {
 							torrentId: queue[qid].torrentId,
 							done: true,
-							progress: 1,
+							progress: status[tid].error ? 0 : 1,
+							error: status[tid].error,
+							errormessage: status[tid].errormessage,
 							song: queue[qid].song,
 						});
 						setQueue(newQueue);
@@ -57,7 +61,13 @@ export const WSContextProvider = ({ children }: { children: ReactNode }) => {
 		if (!queue.find((task) => task.torrentId === song.id)) {
 			setQueue([
 				...queue,
-				{ torrentId: song.id, progress: 0, done: false, song },
+				{
+					torrentId: song.id,
+					progress: 0,
+					done: false,
+					error: false,
+					song,
+				},
 			]);
 			sendMessage(song.id);
 		}
