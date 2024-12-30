@@ -23,6 +23,7 @@ const client = new WebTorrent();
 
 const downloadSong = (ws, tid) => {
 	try {
+			console.log(tid, './torrents/'+tid+'.torrent');
 		if (fs.existsSync("./torrents/" + tid + ".torrent")) {
 			fs.readFile("./torrents/" + tid + ".torrent", (err, data) => {
 				if (!err) {
